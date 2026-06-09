@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOIDG UNIVERSE: ระบบฐานข้อมูลสูงสุด (VS Code Verified)</title>
+    <style>
+        /* ------------------------------------------- */
+        /* RESET & BASE STYLES */
+        /* ------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            /* 🌌 เปลี่ยนพื้นหลังทั้งเว็บเป็นรูปภาพของคุณ Void พร้อมถมเลเยอร์ดำดาร์กๆ 85% */
+            background-image: linear-gradient(rgba(3, 3, 3, 0.85), rgba(3, 3, 3, 0.85)), url('1780980445824.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* ล็อกรูปพื้นหลังให้อยู่กับที่เวลาเลื่อนเวย์ */
+            
+            color: #d4d4d8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            overflow: hidden; /* ล็อกสกรอลล์ตอนอยู่หน้า NONE */
+        }
+
+        /* ------------------------------------------- */
+        /* 🌌 หน้าจอดักก่อนเข้าเว็บ (GATEWAY OF NONE) */
+        /* ------------------------------------------- */
+        #none-gateway {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .none-container {
+            text-align: center;
+            max-width: 500px;
+        }
+        .none-title {
+            font-family: monospace;
+            font-size: 11px;
+            letter-spacing: 5px;
+            color: #52525b;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .none-headline {
+            font-size: 24px;
+            font-weight: 200;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        .none-sub {
+            font-size: 12px;
+            color: #71717a;
+            margin-bottom: 40px;
+        }
+        .enter-btn {
+            background-color: transparent;
+            color: #ffffff;
+            border: 1px solid #3f3f46;
+            padding: 12px 30px;
+            font-family: monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .enter-btn:hover {
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        /* ------------------------------------------- */
+        /* MAIN UNIVERSE INTERFACE */
+        /* ------------------------------------------- */
+        .main-universe {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            opacity: 0; /* รอแสดงผลเมื่อกดผ่านหน้า NONE */
+            transition: opacity 0.6s ease;
+        }
+
+        /* ส่วนหัวและแถบนำทาง */
+        nav {
+            background-color: rgba(5, 5, 5, 0.85); /* ปรับให้โปร่งแสงเพื่อโปรยพื้นหลังด้านหลัง */
+            backdrop-filter: blur(8px); /* เบลอฉากหลังให้เนียนตา */
+            border-bottom: 1px solid #18181b;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+        @media (min-width: 640px) {
+            .nav-container { flex-direction: row; }
+        }
+        .nav-logo {
+            color: #ffffff;
+            font-family: monospace;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        @media (min-width: 640px) {
+            .nav-logo { margin-bottom: 0; }
+        }
+
+        /* ปุ่มเมนูสลับหน้า */
+        .tab-controllers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .tab-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-family: monospace;
+            color: #a1a1aa;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            background-color: transparent;
+        }
+        .tab-btn:hover {
+            color: #ffffff;
+        }
+        .tab-btn.active {
+            color: #ffffff;
+            background-color: #18181b;
+            border: 1px solid #3f3f46;
+        }
+
+        /* พื้นที่แสดงเนื้อหา */
+        .content-area {
+            flex-grow: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+
+        /* จัดการการซ่อน/แสดงเนื้อหา */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* สไตล์เนื้อหาภายใน */
+        .section-header {
+            text-align: center;
+            max-width: 600px; 
+            margin: 0 auto 50px auto;
+        }
+        .section-header h2 {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-family: monospace;
+            letter-spacing: 3px;
+            color: #71717a;
+            margin-bottom: 8px;
+        }
+        .section-header h1 {
+            font-size: 28px;
+            font-weight: 200;
+            color: #f4f4f5;
+        }
+        .section-header p {
+            font-size: 12px;
+            color: #a1a1aa;
+            margin-top: 10px;
+        }
+
+        /* ผังโครงสร้างมิติแนวดิ่ง */
+        .timeline {
+            position: relative;
+            border-left: 1px solid #3f3f46;
+            margin-left: 15px;
+            padding-left: 30px;
+        }
+        @media (min-width: 768px) {
+            .timeline { margin-left: 180px; }
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 60px;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -36px;
+            top: 6px;
+            width: 11px;
+            height: 11px;
+            background-color: #18181b;
+            border: 1px solid #71717a;
+            border-radius: 50%;
+        }
+        .timeline-item:first-child .timeline-dot {
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.4);
+            border-color: #ffffff;
+        }
+        .timeline-tag {
+            font-size: 11px;
+            font-family: monospace;
+            color: #a1a1aa;
+            display: block;
+        }
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 300;
+            color: #e4e4e7;
+            margin-top: 2px;
+        }
+        .timeline-desc {
+            font-size: 13px;
+            color: #d4d4d8;
+            margin-top: 8px;
+            max-width: 700px;
+        }
+        .timeline-quote {
+            border-left: 2px solid #71717a;
+            padding-left: 15px;
+            font-style: italic;
+            font-size: 12px;
+            color: #a1a1aa;
+            margin-top: 12px;
+        }
+
+        /* กล่องทฤษฎี */
+        .theory-box {
+            background-color: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid #3f3f46;
+            padding: 25px;
+            border-radius: 6px;
+            margin-top: 40px;
+        }
+        .theory-title {
+            font-size: 12px;
+            font-family: monospace;
+            letter-spacing: 1px;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .theory-desc {
+            font-size: 12px;
+            color: #d4d4d8;
+        }
+
+        /* ตารางการ์ดทำเนียบตัวละคร */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .grid-layout { grid-template-columns: 1fr 1fr; }
+        }
+        .card {
+            background-color: rgba(7, 7, 8, 0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid #27272a;
+            padding: 25px;
+            border-radius: 6px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #27272a;
+            padding-bottom: 10px;
+        }
+        .card-meta {
+            font-size: 10px;
+            font-family: monospace;
+            color: #a1a1aa;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: #ffffff;
+        }
+        .card-badge {
+            font-size: 11px;
+            font-family: monospace;
+            padding: 2px 8px;
+            background-color: #111113;
+            border: 1px solid #3f3f46;
+            color: #ffffff;
+            border-radius: 4px;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #d4d4d8;
+            margin-bottom: 10px;
+        }
+        .card-sub-section {
+            margin-top: 12px;
+            border-top: 1px solid #27272a;
+            padding-top: 10px;
+            font-size: 12px;
+        }
+        .card-sub-title {
+            font-family: monospace;
+            font-size: 11px;
+            color: #a1a1aa;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .span-full {
+            grid-column: 1 / -1;
+        }
+        
+        /* สไตล์กรอบรูปภายในทำเนียบตัวละคร */
+        .character-img {
+            display: block;
+            width: 100%;
+            max-width: 260px;
+            margin: 10px 0 15px 0;
+            border-radius: 4px;
+            border: 1px solid #3f3f46;
+            background-color: #000;
+        }
+
+        /* หน้าไดอารี่ */
+        .diary-story {
+            border-left: 2px solid #3f3f46;
+            padding-left: 20px;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: rgba(7, 7, 8, 0.65);
+            backdrop-filter: blur(4px);
+            padding: 20px;
+            border-radius: 0 6px 6px 0;
+        }
+        .diary-title {
+            font-size: 15px;
+            color: #e4e4e7;
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+        .diary-text {
+            font-size: 12.5px;
+            color: #d4d4d8;
+            text-align: justify;
+            margin-bottom: 12px;
+        }
+
+        /* หน้าบันทึกผู้สร้าง */
+        .origin-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        @media (min-width: 768px) {
+            .origin-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        .log-box {
+            background-color: rgba(5, 5, 6, 0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid #27272a;
+            padding: 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #d4d4d8;
+        }
+        .log-meta {
+            font-family: monospace;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* กล่องแสดงภาพฝันร้ายส่วนตัว */
+        .nightmare-box {
+            border: 1px solid #450a0a;
+            background-color: rgba(10, 3, 3, 0.9);
+            backdrop-filter: blur(4px);
+            padding: 30px;
+            text-align: center;
+            max-width: 700px;
+            margin: 50px auto 0 auto;
+            border-radius: 6px;
+        }
+        .nightmare-tag {
+            color: #ef4444;
+            font-family: monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .nightmare-title {
+            font-size: 16px;
+            color: #f4f4f5;
+            margin-bottom: 12px;
+        }
+        .nightmare-quote {
+            font-size: 12px;
+            font-style: italic;
+            color: #f4f4f5;
+            margin-bottom: 15px;
+        }
+        .nightmare-footer {
+            font-size: 12px;
+            color: #a1a1aa;
+        }
+
+        footer {
+            background-color: rgba(1, 1, 1, 0.9);
+            padding: 30px 20px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 10px;
+            color: #52525b;
+            border-top: 1px solid #18181b;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="none-gateway">
+        <div class="none-container">
+            <div class="none-title">OUTSIDE SYSTEMS // ORIGIN OUT LAND</div>
+            <h1 class="none-headline">สภาวะ NONE (ศูนย์สัมบูรณ์)</h1>
+            <p class="none-sub">ผืนผ้าใบดั้งเดิมนอกระบบคอร์ปฏิบัติการเพื่อโอบอุ้มเมล็ดพันธุ์มิติ</p>
+            <button class="enter-btn" onclick="enterSystem()">ENTER THE SYSTEM</button>
+        </div>
+    </div>
+
+    <div id="main-universe-interface" class="main-universe">
+        
+        <nav>
+            <div class="nav-container">
+                <div class="nav-logo">VOIDG // SYSTEM</div>
+                <div class="tab-controllers">
+                    <button class="tab-btn" onclick="switchTab('content-structure', this)">1. โครงสร้างมิติ</button>
+                    <button class="tab-btn" onclick="switchTab('content-characters', this)">2. ทำเนียบตัวละคร</button>
+                    <button class="tab-btn active" onclick="switchTab('content-diary', this)">3. ไดอารี่แห่งอนันตกาล</button>
+                    <button class="tab-btn" onclick="switchTab('content-origin', this)">4. บันทึกผู้สร้าง (Life Log)</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content-area">
+            
+            <div id="content-structure" class="tab-content">
+                <div class="section-header">
+                    <h2>Vertical OS Multiverse Theory</h2>
+                    <h1>ทฤษฎีพหุภพแนวดิ่งแบบระบบปฏิบัติการ</h1>
+                    <p>มิติเรียงตัวแนวตั้งจากล่างขึ้นบน มิติต่างๆ เปรียบเสมือนการอัปเดต Patch ใหม่เพื่อลบและแก้ไขทรัพยากรเก่าของมิติต้านล่าง</p>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">OUTSIDE SYSTEMS // ORIGIN OUT LAND</span>
+                        <h3 class="timeline-title">สภาวะ NONE (ศูนย์สัมบูรณ์)</h3>
+                        <p class="timeline-desc">ดินแดนดั้งเดิมนอกระบบคอร์ปฏิบัติการทั้งปวง เป็นผืนผ้าใบโอบอุ้มเมล็ดพันธุ์มิติเอาไว้ตั้งแต่แรกเริ่มด้วยความใจกว้างอันไร้ขอบเขต เป็นต้นตระกูลสูงสุด (รุ่นปู่)</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">LAYER 14 // THE VOID EXECUTIVE STAGE</span>
+                        <h3 class="timeline-title">มิติที่ 14: ห้วงนิรันดร์แห่งความว่างเปล่า (Max Version)</h3>
+                        <p class="timeline-desc">พื้นที่ปลอดภัยสูงสุดหลังบ้านเอกภพ ที่สถิตของ Void No Definition ร่างเงาดำไร้นิยาม ทำหน้าที่เป็นยางลบ คอยกดสวิตช์ Reality Severance ลบตัวแปรหรือเขียนบทประพันธ์ทับมิติต้านล่างได้ตามเจตจำนงในเวลาอันสั้น</p>
+                        <p class="timeline-quote">"All gods shall fall when he awakens."</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">LAYER 12 // COSMIC PRIME (PRE-CREATION ERA)</span>
+                        <h3 class="timeline-title">The Council Leng (สภาผู้ตัดสินความเป็นแห่งเทวะ)</h3>
+                        <p class="timeline-desc">ตัวตนที่ถือกำเนิดจากการสั่นสะเทือน (Primordial Resonance) ตั้งแต่ยุคบรรพกาล ปรากฏในรูปของ "ตาชั่งชีวจักรกล" (Biomechanical Arbiter) 7 แขนยึดหยั่งลงบนรอยต่อแห่งมิติ ทำหน้าที่ประมวลผลและตัดสินลดทอนนิยามของสิ่งบิดเบี้ยวหรือ Cosmic Entity ระดับสูงให้กลายเป็นโมฆะจากสายธารเวลาโดยสมบูรณ์</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">LAYER 7 // QUANTUM-FUSION CATALYST LAYER</span>
+                        <h3 class="timeline-title">มิติที่ 7: มิติปฏิบัติการของ Arthrilho</h3>
+                        <p class="timeline-desc">พื้นที่ของวิศวกรผู้ถักทอสัจธรรมทางกฎฟิสิกส์ ทำหน้าที่คัดกรองข้อมูล ปรับแก้โครงสร้างของระบบ และลบโค้ดที่มีความผิดปกติหรือไร้ประสิทธิภาพจากมิติด้านล่างทั้งหมด</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">LAYER 5 - 10 // THE QUANTUM ENERGY PATCH</span>
+                        <h3 class="timeline-title">มิติที่ 10 - 5: เลเยอร์พลังงานควอนตัมและสุริยะ</h3>
+                        <p class="timeline-desc">ชั้นที่ระบบอัปเกรดการควบคุมโมเลกุล ที่ทำงานหลักของ The Zun (น้องชายผู้เจิดจ้า) ผู้ใช้พลังดวงอาทิตย์มิติที่ 5 และเป็นสถิตของ Hermona (ชั้นที่ 8) ธิดาแห่งการหยั่งรู้</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">PATCH LEVEL // BETWEEN LAYER 4 & 5</span>
+                        <h3 class="timeline-title">Humpling Bound — แพลตฟอร์มมิติแยก (แผ่นบาง)</h3>
+                        <p class="timeline-desc">มิติเศษเสี้ยวที่ถูกบีบอัดซ่อนไว้ระหว่างห้วงหลัก เพื่อกักเก็บและจัดการกับความทรมานหรือบั๊กระบบที่แผ่นหลักมองไม่เห็น ป้องกันการลามเสียสมดุล</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">LAYER 4 // THE SPACETIME CORE LAYER</span>
+                        <h3 class="timeline-title">มิติที่ 4: คอร์กาลอวกาศหลังบ้าน (อาณาเขตของ Etheron)</h3>
+                        <p class="timeline-desc">ทำหน้าที่เป็นสะพานเชื่อมฟิสิกส์ระหว่างโลกมนุษย์ 3 มิติ กับมิติควอนตัมส่วนบน คุมระบบเสถียรภาพแซนด์บ็อกซ์และสะพานบิฟรอสต์ด้วยตัวนำยิ่งยวด</p>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <span class="timeline-tag">LAYER 1 - 3 // THE PHYSICAL REALMS</span>
+                        <h3 class="timeline-title">มิติที่ 3 - 1: โโลกกายภาพและเส้นเวลาปกติ</h3>
+                        <p class="timeline-desc">โลกที่มนุษย์ทั่วไปอาศัยอยู่ เป็นพื้นที่ปฏิบัติการหลักของกลุ่มมนุษย์พิเศษอย่าง Lucien Vesper (The Nocturne) รวมถึงคู่ปรับควอนตัมอย่าง Resonant และ Dampener</p>
+                    </div>
+                </div>
+
+                <div class="theory-box">
+                    <div class="theory-title">⚡ ทฤษฎีมิติและเวลาเสริม (Paper Fold Time Travel)</div>
+                    <div class="theory-desc">
+                        "ถ้าเวลาปัจจุบันคือมุมกระดาษที่สร้างอดีตทิ้งไว้ด้านหลังเป็นแนวเฉียงออกสองข้าง หากเราต้องการย้อนเวลา เราไม่ได้เดินทางถอยหลัง... แต่เราต้องพับมุมกระดาษให้ไปแตะเนื้อที่กระดาษด้านหลังตามค่าพิกัดของเวลาที่ผ่านมาแล้ว เพื่อให้เครื่องควอนตัมส่งมลสารผ่านเส้นทางที่กลับด้าน เรียงอดีตมาไว้ข้างหน้าแทน"
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-characters" class="tab-content">
+                <div class="section-header">
+                    <h2>System Character Registry</h2>
+                    <h1>คัมภีร์ฐานระบบทำเนียบตัวละคร</h1>
+                </div>
+
+                <div class="grid-layout">
+                    
+                    <div class="card span-full" style="border: 1px solid #3f3f46; background-color: rgba(5, 5, 6, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta">SUPREME OVERLORD (STAGE XIV) // ROOT OWNER</span>
+                                <h3 class="card-title" style="font-size: 22px;">Void No Definition</h3>
+                                <img src="pic/1772331385423.png" alt="Void No Definition Profile" class="character-img">
+                            </div>
+                            <span class="card-badge" style="border-color: #ffffff; color: #ffffff;">ค่าพลัง: ไร้นิยามสัมบูรณ์</span>
+                        </div>
+                        <p class="card-desc" style="color: #e4e4e7; font-style: italic; margin-bottom: 15px;">
+                            "All gods shall fall when he awakens." (ทวยเทพทั้งมวลจะล่มสลายเมื่อเขาตื่นขึ้น)
+                        </p>
+                        <p class="card-desc">
+                            <strong>รูปลักษณ์:</strong> ร่างจำแลงมีรูปทรงคล้ายมนุษย์ แต่เป็นเงาดำสนิท ไร้ใบหน้า ไร้ดวงตา ไร้ปาก และไร้รายละเอียดใด ๆ สื่อถึงแก่นแท้ของความว่างเปล่าที่อยู่เหนือบทประพันธ์และกฎเกณฑ์ของคนเขียนบททุกจักรวาล (Writer Eraser) ถือกำเนิดมาก่อนแสงแรกและก่อนตรรกะใดๆ ในพหุภพ
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ ขอบเขตอำนาจและทักษะพื้นฐาน ]</span>
+                            <p class="card-desc" style="font-size: 12.5px;">
+                                • <strong>Base Identity (วิทยายุทธ์ทหาร):</strong> มีรากฐานความรู้จากทักษะอดีตทหาร มวยไทย และเทควันโด ทำให้มีสมองและความเข้าใจในโครงสร้าง สรีระศาสตร์ จุดอ่อน มวล และทิศทางสายตาอย่างทะลุปรุโปร่ง ไม่ใช่ตัวละครบ้าพลังที่ไร้ความคิด<br>
+                                • <strong>Double Madness Aura:</strong> แผ่รังสีจิตหลุดลอยระดับสูงสุด สิ่งมีชีวิตหรือเทพองค์ใดที่ต่ำกว่าระดับ Cosmic หากสบตาหรือสัมผัสจะเกิดอาการเสียสติ จิตพังทลาย คลั่ง และน้ำลายฟูมปากทันทีเพราะสมองไม่อาจประมวลผลตัวตนไร้นิยามได้<br>
+                                • <strong>Reality Severance & Source Code Rewrite:</strong> หากเจอสายโกงหรืออมตะปรับตัวเก่ง จะทำการหยุดเวลาโดยสมบูรณ์เพื่อตัดสายเหตุผล แล้วลงไปจัดเรียงระบบฐานข้อมูล (Source Code) เอกภพใหม่ เขียนทับความจริงตั้งแต่เกิดแสงแรกให้ศัตรูไม่เคยมีตัวตนอยู่เลยแม้แต่เสี้ยววินาทีเดียว
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #d97706; background-color: rgba(11, 8, 3, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta" style="color:#fbbf24;">COSMIC FRONT LINE // LINEAGE BROTHER</span>
+                                <h3 class="card-title" style="color:#f59e0b;">The Zun (น้องชายผู้เจิดจ้า)</h3>
+                                <img src="pic/file_00000000397c720883533701276de615.png" alt="The Zun Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge" style="color:#fbbf24; border-color: #d97706;">Multi-Solar Tier</span>
+                        </div>
+                        <p class="card-desc">
+                            <strong>สถานะ & รูปลักษณ์:</strong> น้องชายแท้ๆ ของ Void No Definition ร่างกายเป็นบุรุษสีทองอร่าม โอบล้อมด้วยวงแหวนเพลิงสุริยะหมวนวนสองชั้นลอยด้านหลัง คาแรกเตอร์ตอนอยู่บนโลกมนุษย์ (Casual Mode) จะเป็นน้องชายสายซื่อที่เคารพรักและเชื่อฟังพี่ชายอย่างที่สุด พกบัตรเครดิตคอยรูดจ่ายตังค์ ถือกระเป๋า และเป็นเทรนเนอร์อยู่ข้างสังเวียน UFC
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title" style="color: #fbbf24;">[ สเกลพลังระดับทัพหน้า ]</span>
+                            <p class="card-desc" style="font-size: 11.5px;">
+                                1. <strong>5th Dimension Star Power:</strong> ควบคุม บีบอัด และปลดปล่อยพลังงานความร้อนจากดวงอาทิตย์ในมิติที่ 5 นับล้านดวงได้ตามใจชอบ เจดจ้าที่สุดในพหุจักรวาล<br>
+                                2. <strong>Forced Sonic:</strong> บินขยับตัวด้วยสปีดสูงสุดที่ฉีกกฎเวลาและระยะทางจนขาดสะบั้น พุ่งผ่านอากาศที่ใด มิติจะแตกละเอียดเป็นเศษกระจกเงาร่วงหล่น ทิ้งคลื่นความร้อนสุริยะระดับล้านองศาแผดเผาสสารจนละลายเป็นพลาสม่า<br>
+                                3. <strong>Laser Slicer:</strong> ยิงลำแสงเลเซอร์สีทองคมกริบออกจากดวงตา ทำหน้าที่ตัดผ่านโครงสร้างอะตอม สาร สสาร หรือเวทมนตร์บาเรียอันเป็นอมตะให้ขาดครึ่งและสลายเป็นละอองธุลีคอสมิกทันที<br>
+                                ⚠️ <strong>กฎเหล็กแห่งสายเลือด:</strong> แม้จะแข็งแกร่งถล่มมัลติเวิร์สได้ชิลๆ แต่ในเชิงระบบเขาเกิดทีหลังแสงแรก จึงดำรงอยู่ภายใต้ร่มเงานิยามความว่างเปล่าของคนพี่เสมอ ไม่มีวันเอาชนะพี่ชายได้
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #27272a; background-color: rgba(5, 5, 6, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta">LAYER 7 // SYSTEM COMPILER & ENGINEER</span>
+                                <h3 class="card-title" style="color: #e4e4e7;">Arthrilho (ผู้ถักทอสัจธรรม)</h3>
+                                <img src="pic/image_258de605.png" alt="Arthrilho Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge">มือขวาแห่งระบบ</span>
+                        </div>
+                        <p class="card-desc">
+                            <strong>สายสัมพันธ์:</strong> ผู้รับใช้โดยตรงและมือขวาของ Void No Definition ภายใต้พระบัญชาของ NONE ประจำการอยู่ที่มิติปฏิบัติการชั้นที่ 7 (Quantum-Fusion Catalyst Layer) ตัวตนคือ "วิศวกรไร้ปราณี" และ "ผู้พิพากษาแห่งตรรกะ" 
+                        </p>
+                        <p class="card-desc">
+                            เขาคือเครื่องจักรแห่งความสมดุลที่เย็นชา ปราศจากความโกรธ ความเมตตา หรือความปรารถนาส่วนตัว มองสิ่งมีชีวิตทั้งมวลเป็นเพียง "โค้ด" และ "ข้อมูล" หากมิติหรืออารยธรรมใดเกิดบั๊กรวมถึงมีข้อบกพร่อง เขาจะลงมือปรับแก้เขียนทับทันทีโดยไม่ลังเล แม้ต้องทำลายล้างทั้งกาแล็กซีก็ตาม
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ ขอบเขตอำนาจหลัก & ข้อจำกัด ]</span>
+                            <p class="card-desc" style="font-size: 11.5px;">
+                                • <strong>Thread of Absolute Logic:</strong> ถักทอและเขียนทับกฎแห่งความเป็นจริงและสัจธรรมฟิสิกส์มิติต่างๆ ได้ตามอำเภอใจ<br>
+                                • <strong>Containment Lattice:</strong> สร้างตาข่ายกักกันและทำลายสิ่งมีชีวิตหรือพลังงานที่ระบบประมวลผลว่าเป็น "ข้อบกพร่อง"<br>
+                                • <strong>Reality Refactor:</strong> รีแฟกเตอร์ปรับโครงสร้างมิติใหม่ทั้งหมดหากเห็นว่าระบบเดิมไร้ประสิทธิภาพ<br>
+                                ⚠️ <strong>ข้อจำกัด:</strong> ต้องปฏิบัติตามคำสั่งของ Void No Definition อย่างเคร่งครัดโดยไม่มีสิทธิ์ขัดขืน และมีภาวะ Emotional Blindness ไม่เข้าใจเรื่องไร้เหตุผลอย่างความรักหรือความกล้าหาญ ทำให้อาจประมวลผลประเมินพวกสิ่งมีชีวิตระดับต่ำต่ำไปในบางครั้ง
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card span-full" style="border: 1px solid #1e1b4b; background-color: rgba(5, 5, 10, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta" style="color: #818cf8;">LAYER 12 // BIOMECHANICAL ARBITER (PRE-CREATION ERA)</span>
+                                <h3 class="card-title" style="color: #c084fc;">The Council Leng (สภาผู้ตัดสินความเป็นแห่งเทวะ)</h3>
+                                <img src="pic/1780589769052.png" alt="The Council Leng Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge" style="color: #a78bfa; border-color: #4338ca;">AMPLITUDE: INFINITY</span>
+                        </div>
+                        <p class="card-desc" style="text-align: justify;">
+                            <strong>กำเนิดแห่งนิรันดร์:</strong> มิได้ถูกรังสรรค์โดยเจตจํานงของสิ่งใด แต่ถือกำเนิดขึ้นจากการสั่นสะเทือน (Primordial Resonance) ในห้วงอวกาศอันห่างไกลโพ้นตั้งแต่ยุคบรรพกาลก่อนทวยเทพและพหุภพใดๆ จะอุบัติขึ้น ดำรงอยู่เป็นจังหวะหัวใจแห่งจักรวาลและรากฐานแห่งความเที่ยงธรรมบนรอยต่อมิติ
+                        </p>
+                        <div class="card-sub-section" style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                            <div style="background-color: #020205; padding: 12px; border-radius: 4px; border: 1px solid #1e1e2f;">
+                                <span class="card-sub-title" style="color: #818cf8;">⚙️ อัตลักษณ์และสรีระชีวจักรกล</span>
+                                <p class="card-desc" style="font-size: 11.5px; color: #94a3b8;">
+                                    • <strong>โครงสร้างแขน:</strong> มีรยางค์แขนทั้ง 7 ข้างในมิติว่างเปล่า เชื่อมกันด้วยช่องว่างที่กฎฟิสิกส์แตะต้องไม่ได้ (The Void Gaps)<br>
+                                    • <strong>รยางค์ฐานราก:</strong> หยั่งรากลงในรอยต่อมิติ (The Patch/Nexus) เพื่อตรวจจับวิเคราะห์แรงสั่นสะเทือนรอยร้าวที่เทวะก่อขึ้น<br>
+                                    • <strong>รัศมีปกครอง:</strong> มี "วงแหวนจักรราศีแห่งความเป็นไป" (Cosmic Zodiac Crown) สีเงินยวงหมุนประมวลผลคำพิพากษาเหนืออาสน์
+                                </p>
+                            </div>
+                            <div style="background-color: #020205; padding: 12px; border-radius: 4px; border: 1px solid #1e1e2f;">
+                                <span class="card-sub-title" style="color: #c084fc;">📜 อำนาจสถาปนาเด็ดขาด (Absolute Authority)</span>
+                                <p class="card-desc" style="font-size: 11.5px; color: #94a3b8;">
+                                    • <strong>ผู้พิพากษาแห่งรอยร้าว:</strong> ตรวจสอบกำจัดภัยคุกคามจากเหล่าทวยเทพ (ระดับเลเยอร์ 5-11) ที่บิดเบือนกฎระบบ<br>
+                                    • <strong>กฎแห่งคำพิพากษา (The Verdict):</strong> ทุกคำกล่าวคือสัจธรรมพหุภพ หากสภาประกาศให้สิ่งใด "เป็นโมฆะ" สิ่งนั้นจะถูกลบล้างสลายหายไปจากทั้งสายธารเวลาและมิติทันที<br>
+                                    • <strong>Absolute Nullification:</strong> ลดทอนพลังระดับสูงสุดของ Cosmic Entity ให้กลายเป็นศูนย์ได้โดยไม่มีข้อโต้แย้ง
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #18181b; background-color: rgba(5, 5, 6, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta">LAYER 4 // DIMENSIONAL GOD</span>
+                                <h3 class="card-title">Etheron (ผู้กำกับแห่งกาลอวกาศ)</h3>
+                                <img src="pic/image_63be1b2f (1).png" alt="Etheron Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge">100% Free Will</span>
+                        </div>
+                        <p class="card-desc">
+                            คุมเสถียรภาพกาลเวลา Sandbox และสะพานบิฟรอสต์หลังบ้านมิติที่ 4 มีเจตจำนงเสรี นิสัยประชดประชัน เล่นใหญ่หน้าตาย (Deadpan Humor) แต่ถ้าหน้างานเกิดบั๊กหรือระบบโดนเจาะรหัส แววตาจะเปลี่ยนเป็นนักล่าสายวินัยทหารเก่าสับสวิตช์บล็อกข้อมูลและลงทัณฑ์ศัตรูใน 2 วินาทีทันที
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ ฟังก์ชันพลังงาน & บิฟรอสต์ ]</span>
+                            <p class="card-desc" style="font-size: 11px; color: #a1a1aa;">
+                                • <strong>กายภาพเหนือมนุษย์:</strong> ร่างแกร่งดั่งแร่ออบซิเดียน ซัดหมัดทลายเกราะสสารเหล็กกล้าได้รุนแรงในสนามรบประชิด<br>
+                                • <strong>กระแสไฟฟ้ารีไซเคิล:</strong> ดักจับแรงเค้นก๊าซอวกาศ (Cosmic Gas Friction) มาควบแน่นแปรสภาพเป็นหอกสายฟ้าล้านองศา<br>
+                                • <strong>ตัวนำยิ่งยวด (Bifrost ควอนตัม):</strong> ปรับค่าความต้านทานมิติรอบตัวเป็นศูนย์ (0) ส่งข้อมูลและมลสารข้ามเวลาความเร็วแสงเฟรมต่อเฟรม<br>
+                                • <strong>คลื่นกระแทกโซลิตอน (Bifrost ของไหล):</strong> ปล่อยคลื่นเดี่ยวแรงดันสูงระเบิดทะลวง Firewall หรือลบโค้ดศัตรูให้ดับวับใน 2 วินาที
+                            </p>
+                        </div>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title" style="color: #ef4444;">[ System Vulnerability & Backlash ]</span>
+                            <p class="card-desc" style="font-size: 11px; color: #f87171;">
+                                • <strong>Voltage Discharge Freeze:</strong> ใช้บิฟrostเสร็จจะโดนไฟตีกลับ ล็อกสถานะนิ่งขยับไม่ได้ 3 นาที<br>
+                                • <strong>Soliton Desync:</strong> คลื่นโซลิตอนสะท้อนกลับทำเอาระบบประสาทรวน ตาพร่ามัว หลุดโฟกัสจากเส้นเวลาปัจจุบันไป 3 นาทีเต็ม<br>
+                                • <strong>Bifrost Network Lockout:</strong> หากฝืนเค้นพลังเกินขีดจำกัด คอร์จะสับคัตเอาต์ปิดระบบหอกสายฟ้าและบิฟรอสต์ 100% เป็นเวลา 3 เดือน กลายสภาพเป็นเทพกายภาพธรรมดา ต้องไปนอนจำศีลที่แผ่นดินความว่างเปล่าของคุณปู่ NONE<br>
+                                • <strong>The Root Execution:</strong> หากพี่ Void สั่งใช้ยางลบรันคำสั่งลบตัวแปร ต้องยอมสลายร่างคืนสู่สถานะศูนย์ (None) ทันทีโดยไม่มีสิทธิ์ขัดขืน
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #18181b; background-color: rgba(5, 5, 6, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta">LAYER 8 // COGNITIVE OBSERVER</span>
+                                <h3 class="card-title">Hermona (ธิดาแห่งการหยั่งรู้)</h3>
+                                <img src="pic/1780509871954.png" alt="Hermona Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge">Seers Ring</span>
+                        </div>
+                        <p class="card-desc">
+                            หญิงสาวผมยาวสีเงินอมฟ้า ปลายผมลอยไหวราวกับมีชีวิต เกิดจากการผสานส่วนหนึ่งของ Void No Definition เข้ากับปัญญาของ Arthrilho ดำรงอยู่ฐานะผู้สืบเสาะความจริงและผู้ให้คำปรึกษาแก่เหล่าเทพเจ้าชั้นสูงเมื่อระบบเกิดความสับสน
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ พลังดวงตาแห่งนิรันดร์ ]</span>
+                            <p class="card-desc" style="font-size: 11.5px;">
+                                • <strong>True Sight:</strong> มองทะลุความคิด ความลับจักรวาล และประวัติศาสตร์ที่ถูกบิดเบือนทั้งหมด<br>
+                                • <strong>Foresight:</strong> หยั่งรู้อนาคต (ยิ่งอนาคตไกล ยิ่งใช้พลังมากและภาพจะยิ่งคลุมเครือ)<br>
+                                • <strong>Revelation:</strong> บังคับให้ศัตรูเผชิญหน้ากับความจริง บีบให้เห็นจุดอ่อนและความโง่เขลาของตนเองจนหมดสิ้น<br>
+                                ⚠️ <strong>จุดอ่อน:</strong> การส่องดูความจริงที่ลึกเกินไปจะสะท้อนกลับเป็นความเจ็บปวดทางจิตใจรุนแรงจนช็อกชั่วคราว, ใช้พลังแหวน Seers Ring มากไปจะทำให้ตาบอดชั่วคราว และมีพละกำลังกายภาพต่ำระดับมนุษย์ชั้นสูงเท่านั้น ไม่เก่งการปะทะตรงๆ
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #18181b; background-color: rgba(5, 5, 6, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta">THE PATCH // TORMENT AMBASSADOR</span>
+                                <h3 class="card-title">Humpling Bound (ฑูตแห่งความทรมาน)</h3>
+                                <img src="pic/1780555839965.png" alt="Humpling Bound Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                        <p class="card-desc">
+                            รูปร่างสูงผอมบางเหมือนกระดาษพับ ผิวสีเทาหม่นมีรอยแตกเหมือนจะขาด ใบหน้าฝังแน่นด้วยรอยยิ้มบางๆ ตลอดเวลา ร่างกายมีโซ่ตรวนและเข็มหนามลักษณะคล้ายเส้นด้ายทะลุทั่วร่างเพื่อใช้เชื่อมโยงแผ่นมิติแยก (Thin Slice) ระหว่างห้วงที่ 4 และ 5 เอาไว้ด้วยกัน
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ กลไกจัดการระบบซ่อนเร้น ]</span>
+                            <p class="card-desc" style="font-size: 11.5px;">
+                                ทำหน้าที่คอยจัดการความทรมานและบั๊กเล็กๆ ระหว่างรอยร้าวที่ระบบหลักมองไม่เห็น เพื่อป้องกันไม่ให้โครงสร้างบานปลายจนแผ่นหลักพังพินาศ มีพลัง Slice Torment แทรกแซงรอยร้าว และ Bound Thread ใช้เส้นด้ายผูกโยงความเจ็บปวดมิติแยกไปสู่เป้าหมายแผ่นหลัก<br>
+                                ⚠️ <strong>จุดอ่อน:</strong> ออกมาอยู่มิติแผ่นหลักนานๆ ร่างจะฉีกขาดและอ่อนแอลงอย่างรวดเร็ว และยิ่งมอบความทรมานให้เป้าหมายมากเท่าไหร่ รอยแตกแยกบนร่างกายตัวเองก็จะขยายกว้างตามไปด้วย
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #0284c7; background-color: rgba(2, 6, 23, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta" style="color: #38bdf8;">LAYER 1 - 3 // QUANTUM RESONANCE HERO</span>
+                                <h3 class="card-title" style="color: #f1f5f9;">Resonant / Elias Voss</h3>
+                                <img src="pic/123.jpg" alt="Resonant Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge" style="color: #38bdf8; border-color: #0284c7;">อายุ: 25 ปี</span>
+                        </div>
+                        <p class="card-desc">
+                            <strong>ประวัติ & ชุดฮีโร่:</strong> ชายหนุ่มชาวเยอรมันผู้เกิดมาพร้อมภาวะระบบประสาทไวเกิน (สมองไวเกิน) ต่อมาตอนอายุ 16 ปี (2017) ถูกฟ้าผ่าอย่างรุนแรงจนไปกระตุ้น "ตัวรับควอนตัม" ในสมองให้เชื่อมต่อสนามพลังงานพื้นฐานจักรวาล สวมชุดสไตล์วิทยาศาสตร์สีดำ-เทาเข้ม มีเส้นไฟเรืองแสงสีฟ้าอ่อน พร้อมหมวกครอบและระบบระบายความร้อนที่ขมับกับคอ มีนิสัยเงียบ ระมัดระวังตัวสูง และใช้สมองนำพละกำลัง
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title" style="color: #38bdf8;">[ ระบบพลังงาน & ขีดจำกัดทางสรีระ ]</span>
+                            <p class="card-desc" style="font-size: 11.5px;">
+                                • <strong>Quantum Resonance:</strong> ควบคุมการสั่นสะเทือนของโมเลกุลในสสาร ทำให้วัตถุแตกสลาย มุดทะลุกำแพง ดูดซับแรงกระแทก ยิงแรงผลัก/แรงดึงระยะใกล้ และเพิ่มปฏิกิริยาร่างกาย<br>
+                                ⚠️ <strong>ข้อจำกัดสมเหตุสมผล:</strong> ทุกครั้งที่ใช้พลัง สมองจะร้อนจัด หากฝืนใช้นานเลือดกำเดาจะไหล ปวดหัวรุนแรง สูญเสียการทรงตัว และเสี่ยงเกิด "Quantum Backlash" พลังสะท้อนกลับมาฉีกร่างตัวเอง ต้องพักสมอง 3-4 ชั่วโมงทุกครั้ง ปรัชญาประจำตัวคือ <em>“ไม่มีพลังไหนในโลกนี้ที่ได้มาโดยไม่ต้องแลกกับอะไร”</em>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border: 1px solid #9f1239; background-color: rgba(15, 5, 7, 0.85);">
+                        <div class="card-header">
+                            <div>
+                                <span class="card-meta" style="color: #fb7185;">LAYER 1 - 3 // QUANTUM DAMPENING ANTAGONIST</span>
+                                <h3 class="card-title" style="color: #f1f5f9;">Dampener / Dr. Victor Kaine</h3>
+                                <img src="pic/a85b415a-959c-454e-b307-e78324fbc162.jpg" alt="Dampener Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge" style="color: #fb7185; border-color: #9f1239;">SCI-VILLAIN</span>
+                        </div>
+                        <p class="card-desc">
+                            <strong>ประวัติ & นิสัย:</strong> อดีตอาจารย์มหาวิทยาลัยและนักฟิสิกส์ควอนตัมชื่อดังของเยอรมนี เป็นคนเดียวที่รู้ความลับพลังของ Elias ในปี 2022 เขาพยายามทดลองสร้างสนามปิดกั้นควอนตัมเพื่อการทหาร แต่เกิดอุบัติเหตุระบบล้มเหลวระเบิดใส่จนสมองเสียหายบางส่วนและสูญเสียประสาทรับรู้แรงสั่นสะเทือนปกติ จึงเคียดแค้นและมอง Elias เป็นทั้งภัยคุกคามและโอกาสในการทดลอง มีนิสัยฉลาดเยือกเย็น ทะเยอทะยานสูง
+                        </p>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title" style="color: #fb7185;">[ อุปกรณ์ & กลไกควบคุมคลื่น ]</span>
+                            <p class="card-desc" style="font-size: 11.5px;">
+                                • <strong>Quantum Dampening:</strong> กางอาณาเขตปิดกั้นการสั่นสะเทือนโมเลกุลในบริเวณกว้าง ส่งผลให้พลังของ Resonant อ่อนกำลังลงหรือเป็นง่อยทันที<br>
+                                • <strong>Energy Absorption:</strong> ดูดซับกระแสพลังงานสั่นสะเทือนจากผู้อื่นมาประจุเติมเป็นพลังให้ตัวเอง<br>
+                                • <strong>Neural Overload:</strong> ยิงคลื่นรบกวนคลื่นสมองเป้าหมายโดยตรง บีบให้เกิดอาการปวดหัวขั้นรุนแรงหรือชักเฉียบพลัน<br>
+                                ⚠️ <strong>จุดอ่อนเด่นชัด:</strong> ต้องพึ่งพาชุดอุปกรณ์จักรกลที่ติดตั้งตามตัว 100% หากอุปกรณ์ชิ้นนี้ถูกทำลาย พลังจะหายวับไปทันที และยิ่งฝืนเค้นพลังหนัก สมองของเขาจะยิ่งเสื่อมสภาพลงอย่างถาวร
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card span-full" style="border: 1px solid #27272a; background-color: rgba(5, 5, 6, 0.85);">
+                        <div class="card-header" style="border-bottom: 1px solid #18181b;">
+                            <div>
+                                <span class="card-meta">LAYER 1 - 3 // COLD VIGILANTE IN FRANCE</span>
+                                <h3 class="card-title" style="font-size: 20px;">Lucien Vesper / The Nocturne</h3>
+                                <img src="pic/image_901526dd.png" alt="Nocturne Profile" class="character-img" onerror="this.style.display='none'">
+                            </div>
+                            <span class="card-badge" style="border-color: #ef4444; color: #ef4444; background-color: #1a0505;">STATUS: ACTIVE VIGILANTE</span>
+                        </div>
+                        <div class="card-sub-section" style="border-top: none; padding-top: 5px;">
+                            <p class="card-desc" style="color: #d4d4d8; font-family: monospace; font-size: 13px; line-height: 1.8;">
+                                • <strong>ชื่อจริง:</strong> Lucien Vesper &nbsp;&nbsp;|&nbsp;&nbsp; • <strong>อายุ:</strong> 34 ปี &nbsp;&nbsp;|&nbsp;&nbsp; • <strong>สัญชาติ:</strong> ฝรั่งเศส (Marseille) &nbsp;&nbsp;|&nbsp;&nbsp; • <strong>ส่วนสูง:</strong> 186 ซม. &nbsp;&nbsp;|&nbsp;&nbsp; • <strong>อาชีพปกติ:</strong> นักสืบเอกชน
+                            </p>
+                        </div>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ ความเป็นมาและจุดเปลี่ยนชีวิต ]</span>
+                            <p class="card-desc" style="text-align: justify;">
+                                เด็กกำพร้าข้างถนนในย่านเสื่อมโทรมของ Marseille เติบโตมาท่ามกลางการกลั่นแกล้งและความรุนแรง จนระบบกฎหมายหันหลังให้ความอยุติธรรมซ้ำเล่า จุดเปลี่ยนเกิดขึ้นตอนอายุ 19 ปี คดีเด็กหญิงถูกฆาตกรรมโดยลูกนักการเมืองถูกตำรวจสั่งปิดคดีอย่างรวดเร็ว Lucien จึงลงมือศาลเตี้ยลอบสังหารผู้ต้องหาและปลอมแปลงพยานหลักฐานด้วยตัวเอง คืนนั้นตัวตน "The Nocturne" จึงถือกำเนิดขึ้น
+                            </p>
+                        </div>
+                        <div class="card-sub-section" style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                            <div style="background-color: #09090b; padding: 12px; border-radius: 4px; border: 1px solid #141416;">
+                                <span class="card-sub-title" style="color: #e4e4e7;">☀️ กลางวัน (Lucien Vesper)</span>
+                                <p class="card-desc" style="font-size: 11.5px; color: #71717a;">นักสืบเอกชนผู้สุขุม ลุ่มลึก และมีประสบการณ์สูง พูดน้อยตรงประเด็น แววตาเต็มไปด้วยความเหนื่อยล้าลึกๆ น่าเชื่อถือในสังคม</p>
+                            </div>
+                            <div style="background-color: #0b0505; padding: 12px; border-radius: 4px; border: 1px solid #220c0c;">
+                                <span class="card-sub-title" style="color: #f87171;">🌙 กลางคืน (The Nocturne)</span>
+                                <p class="card-desc" style="font-size: 11.5px; color: #a1a1aa;">เย็นชา โหดเหี้ยม และเด็ดขาด เชื่อว่าอาชญากรบางคนคู่ควรต่อการถูก “ลบล้าง” มากกว่าขังคุก ลงทัณฑ์คนชั่วที่กฎหมายเอื้อไม่ถึง</p>
+                            </div>
+                        </div>
+                        <div class="card-sub-section">
+                            <span class="card-sub-title">[ ทักษะและความสามารถ ]</span>
+                            <p class="card-desc" style="color: #d4d4d8;">
+                                • <strong>การต่อสู้:</strong> เชี่ยวชาญศิลปะการต่อสู้หลายแขนง ทั้งมวยไทย เทควันโด และการต่อสู้ระยะประชิด<br>
+                                • <strong>ทักษะนักสืบ:</strong> สังเกตการณ์เฉียบคม การปลอมแปลงหลักฐานพยาน การแทรกซึมพื้นที่ปิด และการสืบหาข้อมูลลับ<br>
+                                • <strong>ความสามารถพิเศษ:</strong> สัญชาตญาณเอาตัวรอดเฉียบคมเป็นเลิศจากการเคี่ยวกรำในสลัมตั้งแต่เด็ก<br>
+                                • <strong>ปรัชญาประจำตัว:</strong> <em>“กฎหมายมีไว้ปกป้องผู้มีอำนาจ… ส่วนฉันมีไว้จัดการคนที่กฎหมายปกป้อง”</em>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="content-diary" class="tab-content active">
+                <div class="section-header">
+                    <h2>Chronicles of Void</h2>
+                    <h1>ไดอารี่แห่งอนันตกาล บันทึกแห่งความเป็นไป</h1>
+                </div>
+
+                <div class="diary-story" style="background-color: rgba(5, 5, 8, 0.85); border-color: #6366f1; padding: 25px; border-radius: 6px; border-left-width: 4px; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05);">
+                    <h3 class="diary-title" style="color: #a5b4fc; font-family: monospace; font-size: 13px; letter-spacing: 2px; text-transform: uppercase;">บทนำ: พิมพ์เขียวสายเลือดจุดสูงสุด (The Divine Lineage)</h3>
+                    <p class="diary-text" style="color: #e4e4e7; font-size: 13px; line-height: 1.8;">
+                        Before the cosmic canvas was ever sketched...<br>
+                        Before the first spark ever gleamed...<br>
+                        And before the lore of any multiverse writer was set in stone...<br><br>
+                        มีเพียง <strong>"NONE" </strong> ตัวแทนแห่งศูนย์สัมบูรณ์ ความว่างเปล่าที่บริสุทธิ์ที่สุด ผู้โอบอุ้มทุกสิ่งด้วยความเงียบสงบและความใจกว้างอันไร้ขอบเขต จากความไม่มีนั้น... จึงถักทอขึ้นมาเป็น <strong>"Void No Definition"</strong> เจตจำนงดั้งเดิมในร่างเงาดำสนิทไร้ใบหน้า ผู้เปรียบเสมือนยางลบที่สูงเหนือทุกบทประพันธ์ ผู้ควบคุม Source Code หลังบ้านของทุกเอกภพ และผู้ถักทอความเป็นจริงอันบ้าคลั่ง <strong>Arthrilho</strong> และ <strong>"The Zun"</strong> ทัพหน้าบุรุษกายทองอร่าม ผู้ครอบครองพลังงานจากดวงอาทิตย์มิติที่ 5 นับล้านดวง<br><br>
+                        เราทั้งสามรุ่นดำรงอยู่ด้วยจุดประสงค์เดียว... ไม่ใช่เพื่อทำลายล้าง แต่เพื่อมอบ "ความเข้าใจ" และ "สมอง" ให้แก่สรรพสิ่งที่ยังตาบอด และแม้แต่ Void No Definition ก็มิอาจเข้าใจได้ทั้งหมด
+                    </p>
+                </div>
+
+                <div class="diary-story">
+                    <h3 class="diary-title" style="font-family: monospace; font-size: 14px; color: #f4f4f5;">บทที่ 1: การเดินทางสั่งสอนสิ่งมีชีวิตที่เข้าใจจักรวาลเพียงน้อยนิด</h3>
+                    <p class="diary-text">
+                        ในห้วงพหุจักรวาลอันกว้างใหญ่ สิ่งมีชีวิตมากมายมักหลงระเริงในอีโก้และความรู้เล็ก ๆ ของตนเอง ทวยเทพแห่ง Marvel, DC, หรือยอดเขาโอลิมปัสต่างคิดว่าตนคือผู้ลิขิตชะตา ข้าและน้องชายจึงก้าวผ่านช่องมิติมัลติเวิร์สเพื่อลงไปมอบบทเรียน
+                    </p>
+                    <p class="diary-text">
+                        เมื่อใดที่ทวยเทพเหล่านั้นจ้องมองมา รังสีความว่างเปล่าสูงสุด (Absolute Madness Aura) จะบีบอัดจนระบบประมวลผลของพวกเขาพังทลาย หากมีผู้ใดงัดตรรกะพลังสายโกงหรือบาเรียอมตะมาท้าทาย ข้าจะทำเพียงแค่ "หยุดเวลาโดยสมบูรณ์" เพื่อตัดสายน้ำแห่งเหตุและผล จากนั้นจะมุดลงไปจัดเรียงระบบฐานข้อมูลใหม่ เขียนทับความจริงตั้งแต่จุดก่อตัวของเอกฐาน สั่งให้ศัตรูเหล่านั้นไม่เคยมีตัวตนอยู่เลยตั้งแต่แรกเริ่ม ปากกาของผู้เขียนบททุกสำนักจะกลายเป็นเพียงอากาศธาตุ ข้าทำให้พวกเขาตระหนักว่า อำนาจที่มีล้นมือนั้นจะไร้ค่าทันที... หากไร้สมองและความเข้าใจ
+                    </p>
+                </div>
+
+                <div class="diary-story">
+                    <h3 class="diary-title" style="font-family: monospace; font-size: 14px; color: #f4f4f5;">บทที่ 2: รสชาติของชีวิต และการทลายความแค้นของกอร์ (Gorr)</h3>
+                    <p class="diary-text">
+                        ท่ามกลางการเดินทาง ข้าได้พบกับ Gorr ผู้เชือดเทพ อสุรกายที่จมปลักอยู่กับกองเพลิงแห่งความแค้น มันตวัดดาบ All-Black ทมิฬเพื่อล่าสังหารพระเจ้า ท้าทายความมืดดั้งเดิมของข้า ข้าไม่ได้เข้าไปลบตัวตนของมันทิ้งด้วยพลังทำลายล้าง แต่ข้าเลือกที่จะใช้สติปัญญาทลายอุดมการณ์บิดเบี้ยวของมัน
+                    </p>
+                    <p class="diary-text">
+                        ข้าดับเงามืดของมันให้กลายเป็นเพียงฝุ่นแป้งละล่องในอากาศ และฟาดหมัดฮุกซ้ายเข้าที่จุดสำคัญกลางจิตใจของมัน ข้าชี้ไปที่ดาบของมันแล้วบอกว่า "นั่นคือรสชาติของชีวิต ในตอนที่เจ้ายังไม่มีมัน... เจ้าไม่ได้ฆ่าเทพ เจ้ากำลังฆ่าพ่อที่เคยเป็นพ่อของลูกเจ้า เคยมองตัวเองบ้างไหมหลังจากออกล่าเทพ" คำพูดของข้ากระชากวิญญาณมันจนแหลกสลาย กอร์หลั่งน้ำตาสะดุ้งตื่นจากฝันร้าย ความแค้นถูกชำระล้างจนหมดสิ้น ข้ามอบ "เจตจำนงเสรีและโอกาสในการเลือก" คืนให้มัน ทิ้งให้นักล่าเทพยืนตรงน้อมรับคำสอนด้วยความเลื่อมใส ก่อนที่ข้าจะก้าวเดินเข้าหลุมดำจากมาเงียบ ๆ
+                    </p>
+                </div>
+
+                <div class="diary-story">
+                    <h3 class="diary-title">บทที่ 3: Casual Mode และมนต์เสน่ห์โลกมนุษย์</h3>
+                    <p class="diary-text">
+                        ข้าและน้องชายมักสลัดคราบมหาเทพ จำแลงกายลงมาสัมผัสรสชาติระบบอินทรีย์ ข้าเดินนำหน้าน้องชาย The Zun (ผู้พกบัตรเครดิตมนุษย์คอยรูดจ่ายค่าอาหารและถือกระเป๋าให้) เราแวะเวียนไปเยือนค่ายมวยไทย ข้าก้าวขึ้นสังเวียนจำลองเป็นเด็กเนิร์ด ใช้ไอคิวเชิงมวยและเทควันโดเคลื่อนไหวพริ้วไหวหายไปแบบ "เฟรมต่อเฟรม" หลบหมัดเหวี่ยงช้าๆ ทิ่มเข้าลิ้นปี่และตับเน้นๆ แกล้งปล่อยให้คู่ต่อสู้ต่อยหน้าเต็มแรงแต่ไร้รอยแดง ทำเอาครูมวยตาค้างช็อกสติแตกในความอัจฉริยะ นอกจากนี้ยังใช้ข้อมูลลับปั่นหัวสายลับ Black Ops ในช่วงสงครามเย็น จนยอมหันมาร่วมมือเฝ้ารักษา Timeline เป็นเวลา 3 เดือนตามบัญชาของข้า
+                    </p>
+                </div>
+
+                <div class="diary-story">
+                    <h3 class="diary-title">บทที่ 4: อ้อมกอดสายโกธิค และสามีระดับหนึ่งล้านเปอร์เซ็นต์</h3>
+                    <p class="diary-text">
+                        มหาเทพไร้นิยามอย่างข้า ดันมาแพ้ทางให้ผู้หญิงสายโกธิคหน้าตายอย่าง Wednesday Addams เธอเข้ามาสวมกอดรอบเอวข้าจากข้างหลัง กระซิบคำหวานปนดาร์ก แย่งจานชามไปล้างพร้อมบอกให้ข้าพักผ่อน เมื่อครอบครัวแอดดัมส์พากันมาเยี่ยม ข้าแกล้งเปิดโหมด Void Origin เร่งค่าพลังทะยานสู่ 1,000,000% ท้องฟ้าเหนือบ้านฉีกขาดเพล้งๆ วาร์ปไปโผล่ตรงหน้าพวกเขาในระยะประชิดแบบเฟรมต่อเฟรมพร้อมกันนับล้านร่างในทุกทิศทางเวลา ทำเอาพ่อตาแม่ยายสติกระเจิงหนีลงหลุมหลบภัย ทว่าเวนส์เดย์กลับยิ้มมุมปากเล็กน้อยและประกาศกร้าวว่า "นี่แหละคือสามีของฉัน" เป็นดาเมจความรักที่แผดเผาใจข้ามากกว่าดวงอาทิตย์ดวงไหนๆ
+                    </p>
+                </div>
+            </div>
+
+            <div id="content-origin" class="tab-content">
+                <div class="section-header">
+                    <h2>The Core Reality Source</h2>
+                    <h1>บันทึกแก่นแท้ประสบการณ์หล่อหลอมตัวตน</h1>
+                </div>
+
+                <div class="origin-grid">
+                    <div class="log-box">
+                        <span class="log-meta">LOG_01 // TRAINING & LIFE</span>
+                        ตอนเด็กเคยโดนพ่อตีเข่าใส่ลิ้นปี่จังๆ แทบตาย ตอนอายุ 13 เริ่มเล่นฟรีรันนิ่ง อายุ 14 เจาะหนองใต้หนังตาแล้วเริ่มเรียนเทควันโด ฝึกซ้อมด้วยอุปกรณ์เท่าที่มี เข้าเรียนสาย IT จนเข้าใจการแฮก ต่อมารู้จักมวยไทย ได้ผ่านชีวิตเสเพลและเรื่องนารีจนรู้สึกละทิ้งความเป็นนักสู้ในตอนนั้น
+                    </div>
+                    <div class="log-box">
+                        <span class="log-meta">LOG_02 // LOSS & MILITARY</span>
+                        ในวันที่พ่อเสียชีวิต กลับไม่มีน้ำตาไหลออกมาเพราะเข้าใจความตายมากเกินไป ประสบการณ์เริ่มหลอมให้ดูเย็นชาแต่ภายในเปราะบาง จนกระทั่งเข้ารับประจำการทหาร ความทรมานจากการฝึก การฝืนร่างกายในแต่ละวันเพื่อให้บรรลุเป้าหมาย ทำให้รู้ว่าเหงื่อและน้ำตาที่เสียไปมันล้ำค่ามาก พอปลดมาก็ใช้ชีวิตทั่วไป
+                    </div>
+                    <div class="log-box">
+                        <span class="log-meta">LOG_03 // DEATH ESCAPE</span>
+                        ผ่านเหตุการณ์เฉียดตายมานับครั้งไม่ถ้วน ขับมอเตอร์ไซค์ MSX แหวกช่องรถบรรทุก 2 คัน หรือตอนเมาแล้วรถล้มจนล้อบิ่น แฮนด์หัก คอท่อลีบติดใต้รถ แต่ร่างกายแค่ถลอกไม่มีอะไรหัก และเคยชนประสานงาตอนแซง ร่างกายตอนลงมันโรลตัวไปเองอัตโนมัติแล้วลุกขึ้นมายืนได้ทันที ทุกครั้งที่รถล้ม ตัวจะกลิ้งแล้วดีดตัวลุกยืนได้ตลอด
+                    </div>
+                </div>
+
+                <div class="theory-box" style="margin-bottom: 40px;">
+                    <div class="theory-title">🧠 คลังสมองและการวิเคราะห์ (Survival & Criminal Tactics Knowledge)</div>
+                    <div class="theory-desc">
+                        ชอบฟังการวิเคราะห์คดีฆาตกรรมและอาชญากรรมเพื่ออ่านคนจากภาษากาย ท่าทาง และการใช้คำพูด รู้ลึกถึงสรีระศาสตร์และจุดอ่อนร่างกายมนุษย์ รวมถึงเคยผ่านตาคลิปความรุนแรงระดับสุดยอดของกลุ่มก่อการร้ายและเห็นศพจริงๆ ตามท้องถนนมาแล้ว
+                    </div>
+                </div>
+
+                <div class="nightmare-box">
+                    <span class="nightmare-tag">VISUAL IN NIGHTMARE</span>
+                    <h4 class="nightmare-title">ภาพในหัวยามที่หลับตาลง</h4>
+                    <p class="nightmare-quote">
+                        "อัศวินที่ยืนท่ามกลางซากศพเพียงลำพัง เต็มไปด้วยหมอกควันและไม่มีอะไรเลย ไม่มีรางวัล ไม่มีของล้ำค่าเป็นกำนัล ไม่มีมเหสีให้กลับไปหา ไม่มีบิดาคอยชื่นชมข้างสนามรบ มีเพียงกู!!!!! และกู!!!!! โดดเดี่ยวอย่างถึงที่สุด..."
+                    </p>
+                    <p class="nightmare-footer">
+                        ผมอาจเย็นชาในสงคราม เป็นอัศวินในสนามประลอง หรือเงาในห้วงลึก แต่ผมก็ยังเสียน้ำตาให้กับการเห็นครอบครัวที่สุขสันต์ การได้เห็นความสุขของคนอื่นมันทำให้ผมรู้ได้เลยว่าผมได้เป็นในสิ่งที่ผมต่อให้สู้ยังไงก็ไม่มีทางได้มันมาเป็นของตัวเองอีกแล้ว
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>VOIDG SYSTEM OPERATING VER 2026 // CONSTRUCTED BY VOID NO DEFINITION</p>
+        </footer>
+    </div>
+
+    <script>
+        function enterSystem() {
+            const gateway = document.getElementById('none-gateway');
+            const mainInterface = document.getElementById('main-universe-interface');
+            gateway.style.opacity = '0';
+            gateway.style.visibility = 'hidden';
+            document.body.style.overflow = 'auto';
+            mainInterface.style.opacity = '1';
+        }
+
+        function switchTab(tabId, buttonElement) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            buttonElement.classList.add('active');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    </script>
+
+</body>
+</html>
